@@ -121,40 +121,67 @@ def calculate_retirement_goals(inputs: Inputs):
       You are a retirement planner and you help people interpret and summarise retirement goals. 
     """
 
+    user_content = f"""
+    Summarize the retirement plan in plain text in 100 words.
+    Inputs:
+    - Current investment value: {personal.currentInvestmentVal}
+    - Years to retire: {personal.yearstoRetire}
+    - Years post retirement: {personal.yearsPostRetirement}
+    - Target yearly income post retirement: {personal.targetYearlyIncome}
+    Assumptions:
+    - Fund expense ratio: {assumptions.expenseRatio}
+    - Rate of return on investment: {assumptions.investmentRoR}
+    - Interest on savings post retirement: {assumptions.savingsRoR}
+    - CPI: {assumptions.cpi}
+    Calculations:
+    - Monthly contribution: {monthly_contribution}
+    - Target savings: {npv}
+    - Accumulation period: {yearly_buildup}
+    - Annuity payments: {annuity_payments}
+    """
+
     completion = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
             {"role": "system", "content": system_content},
-            {
-                "role": "user",
-                "content": f"""Help summarise the retirement plan in plain text and within 150 words, given the following inputs from user
-                current value of investment : {personal.currentInvestmentVal},
-                years to retire : {personal.yearstoRetire},
-                years post retirement : {personal.yearsPostRetirement},
-                target yearly income post retirement : {personal.targetYearlyIncome}
-                and the following assumptions the user has made namely,
-                fund expense ratio: {assumptions.expenseRatio},
-                assumed rate of return on investment : {assumptions.investmentRoR},
-                assumed interest on savings post retirement : {assumptions.savingsRoR},
-                cpi : {assumptions.cpi}
-
-                The above parameters requires them to:
-                make a monthly contribution of : {monthly_contribution},
-                which will allow them to have a target savings of {npv}
-                that will allow them to reach the target yearly income level factoring in inflation
-                note the following and you can make creative reference to the below in the summary plan:
-                1. the accumulation period particulars are captured in {yearly_buildup}
-                2. the annuity payments post retirement are captured in {annuity_payments}
-
-                While being a little creative is good,  don't change the inputs and the calculated values in the plan.
-                Organise the reponse in logical paragraphs please.
-                Sound like a seasoned financial advisor while appealing to laypersons in finance.
-                
-                """
-            },
+            {"role": "user", "content": user_content},
         ],
         temperature=0.5
     )
+    #completion = client.chat.completions.create(
+    #    model="gpt-4o-mini",
+    #    messages=[
+    #        {"role": "system", "content": system_content},
+    #        {
+    #            "role": "user",
+    #            "content": f"""Help summarise the retirement plan in plain text and within 150 words, given the following inputs from user
+    #            current value of investment : {personal.currentInvestmentVal},
+    #            years to retire : {personal.yearstoRetire},
+    #            years post retirement : {personal.yearsPostRetirement},
+    #            target yearly income post retirement : {personal.targetYearlyIncome}
+    #            and the following assumptions the user has made namely,
+    #            fund expense ratio: {assumptions.expenseRatio},
+    #            assumed rate of return on investment : {assumptions.investmentRoR},
+    #            assumed interest on savings post retirement : {assumptions.savingsRoR},
+    #            cpi : {assumptions.cpi}
+
+    #            The above parameters requires them to:
+    #            make a monthly contribution of : {monthly_contribution},
+    #            which will allow them to have a target savings of {npv}
+    #            that will allow them to reach the target yearly income level factoring in inflation
+    #            note the following and you can make creative reference to the below in the summary plan:
+    #            1. the accumulation period particulars are captured in {yearly_buildup}
+    #            2. the annuity payments post retirement are captured in {annuity_payments}
+
+    #            While being a little creative is good,  don't change the inputs and the calculated values in the plan.
+    #            Organise the reponse in logical paragraphs please.
+    #            Sound like a seasoned financial advisor while appealing to laypersons in finance.
+    #            
+    #            """
+    #        },
+    #    ],
+    #    temperature=0.5
+    #)
 
     response = Outputs(
          retirementPlanSummary = str(completion.choices[0].message.content),
