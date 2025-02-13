@@ -128,6 +128,7 @@ def calculate_retirement_goals(inputs: Inputs):
       You are a retirement planner and you help people interpret and summarise retirement goals. 
     """
 
+
     user_content = f"""
     Summarize the retirement plan in plain text in 150 words.
     Inputs:
@@ -150,9 +151,9 @@ def calculate_retirement_goals(inputs: Inputs):
     - if {monthly_contribution} is greater than {personal.contributionAffordability}:
         frame the response in a way that tells the user they cannot afford the monthly contribution
     - else:
-        frame the response in a way that tells the user they can afford the monthly contribution
+        frame the response that tells the user they can afford the monthly contribution
     first start with what they need to do to meet their goal and then give them the summary of the plan
-    then comment on whehter they can afford the monthly contribution or not.
+    then comment on whether they can afford the monthly contribution or not.
     sound friendly and professional.
     """
 
