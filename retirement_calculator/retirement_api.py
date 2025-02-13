@@ -24,6 +24,7 @@ class PersonalSituation(BaseModel):
     yearstoRetire: int
     yearsPostRetirement: int
     targetYearlyIncome: float
+    contributionAffordability: float
 
 class Assumptions(BaseModel):
     cpi: float
@@ -98,6 +99,12 @@ def calculate_retirement_goals(inputs: Inputs):
 
     monthly_contribution = result.x
 
+    if monthly_contribution > personal.contributionAffordability:
+        outcome = "No"
+    else:
+        outcome = "Yes"
+    
+
     # Calculate yearly buildup towards reirement corpus during the accumulation period
 
     yearly_buildup = []
@@ -122,7 +129,7 @@ def calculate_retirement_goals(inputs: Inputs):
     """
 
     user_content = f"""
-    Summarize the retirement plan in plain text in 100 words.
+    Summarize the retirement plan in plain text in 150 words.
     Inputs:
     - Current investment value: {personal.currentInvestmentVal}
     - Years to retire: {personal.yearstoRetire}
@@ -134,10 +141,19 @@ def calculate_retirement_goals(inputs: Inputs):
     - Interest on savings post retirement: {assumptions.savingsRoR}
     - CPI: {assumptions.cpi}
     Calculations:
-    - Monthly contribution: {monthly_contribution}
+    - Calculated Monthly contribution need to meet goal: {monthly_contribution}
     - Target savings: {npv}
     - Accumulation period: {yearly_buildup}
     - Annuity payments: {annuity_payments}
+    - User's contribution affordability: {personal.contributionAffordability}
+    - you need to compare the monthly contribution with the user's contribution affordability
+    - if {monthly_contribution} is greater than {personal.contributionAffordability}:
+        frame the response in a way that tells the user they cannot afford the monthly contribution
+    - else:
+        frame the response in a way that tells the user they can afford the monthly contribution
+    first start with what they need to do to meet their goal and then give them the summary of the plan
+    then comment on whehter they can afford the monthly contribution or not.
+    sound friendly and professional.
     """
 
     completion = client.chat.completions.create(
@@ -148,41 +164,7 @@ def calculate_retirement_goals(inputs: Inputs):
         ],
         temperature=0.5
     )
-    #completion = client.chat.completions.create(
-    #    model="gpt-4o-mini",
-    #    messages=[
-    #        {"role": "system", "content": system_content},
-    #        {
-    #            "role": "user",
-    #            "content": f"""Help summarise the retirement plan in plain text and within 150 words, given the following inputs from user
-    #            current value of investment : {personal.currentInvestmentVal},
-    #            years to retire : {personal.yearstoRetire},
-    #            years post retirement : {personal.yearsPostRetirement},
-    #            target yearly income post retirement : {personal.targetYearlyIncome}
-    #            and the following assumptions the user has made namely,
-    #            fund expense ratio: {assumptions.expenseRatio},
-    #            assumed rate of return on investment : {assumptions.investmentRoR},
-    #            assumed interest on savings post retirement : {assumptions.savingsRoR},
-    #            cpi : {assumptions.cpi}
-
-    #            The above parameters requires them to:
-    #            make a monthly contribution of : {monthly_contribution},
-    #            which will allow them to have a target savings of {npv}
-    #            that will allow them to reach the target yearly income level factoring in inflation
-    #            note the following and you can make creative reference to the below in the summary plan:
-    #            1. the accumulation period particulars are captured in {yearly_buildup}
-    #            2. the annuity payments post retirement are captured in {annuity_payments}
-
-    #            While being a little creative is good,  don't change the inputs and the calculated values in the plan.
-    #            Organise the reponse in logical paragraphs please.
-    #            Sound like a seasoned financial advisor while appealing to laypersons in finance.
-    #            
-    #            """
-    #        },
-    #    ],
-    #    temperature=0.5
-    #)
-
+    
     response = Outputs(
          retirementPlanSummary = str(completion.choices[0].message.content),
          periodicContributionNeeded = monthly_contribution,
@@ -194,25 +176,7 @@ def calculate_retirement_goals(inputs: Inputs):
     def format_currency(value):
         return f"${value:,.2f}"
 
-    # Modify your response
-    #response = Outputs(
-    #    retirementPlanSummary=str(completion.choices[0].message.content),
-    #    periodicContributionNeeded=format_currency(monthly_contribution),
-    #    accumulationPeriod=[
-    #        {
-    #            "year": p["year"],
-    #            "investedPrincipal": format_currency(p["investedPrincipal"]),
-    #            "totalBalanceAfterExpenses": format_currency(p["totalBalanceAfterExpenses"]),
-    #            "returnNetofExpenses": format_currency(p["returnNetofExpenses"])
-    #        }
-    #        for p in yearly_buildup
-    #    ],
-    #    investmentValueAtRetirement=format_currency(npv),
-    #    annuityPayments=[
-    #        {"year": p["year"], "amount": format_currency(p["amount"])} for p in annuity_payments
-    #    ]
-    #)
-
+    
     return response
 
 # Run the app using: uvicorn filename:app --reload
