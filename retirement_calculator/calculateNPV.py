@@ -10,7 +10,7 @@ def calculate_npv(annuity_list, discount_rate):
     :return: Present value of all annuity payments.
     """
     # Extract the annuity amounts into a NumPy array
-    cash_flows = np.array([payment["amount"] for payment in annuity_list])
+    cash_flows = np.array([payment.amount for payment in annuity_list])
 
     # Use np.npv() to calculate the present value of all future cash flows
     npv = npf.npv(discount_rate, cash_flows)
