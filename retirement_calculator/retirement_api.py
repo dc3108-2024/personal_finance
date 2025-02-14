@@ -7,6 +7,7 @@ import os
 from dotenv import load_dotenv
 import openai
 from openai import OpenAI
+import calcTargetIncome
 
 
 
@@ -62,8 +63,9 @@ def calculate_retirement_goals(inputs: Inputs):
     assumptions = inputs.assumptions
     
     # Calculate inflation adjusted target yearly income level @ retirement
-    targetYearlyInfAdjusted = personal.targetYearlyIncome*((1+assumptions.cpi)**(personal.yearstoRetire))
+    #targetYearlyInfAdjusted = personal.targetYearlyIncome*((1+assumptions.cpi)**(personal.yearstoRetire))
 
+    targetYearlyInfAdjusted = calcTargetIncome.calculate_inflation_adjusted_income(personal.targetYearlyIncome,assumptions.cpi,personal.yearstoRetire)
     annuity_payments = []
 
     # Calculate inflation adjusted yearly income for each year for the rest of the retirement period
