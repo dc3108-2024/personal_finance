@@ -69,7 +69,14 @@ def calculate_retirement_goals(inputs: Inputs):
     annuity_payments = []
 
     # Calculate inflation adjusted yearly income for each year for the rest of the retirement period
-    annuity_payments = calculateAnnuity.calculate_annuity_payments(targetYearlyInfAdjusted, personal.yearsPostRetirement, assumptions.cpi)
+    #annuity_payments = calculateAnnuity.calculate_annuity_payments(targetYearlyInfAdjusted, personal.yearsPostRetirement, assumptions.cpi)
+
+    # Calculate inflation adjusted yearly income for each year for the rest of the retirement period
+    annuity_payments_dicts = calculateAnnuity.calculate_annuity_payments(targetYearlyInfAdjusted, personal.yearsPostRetirement, assumptions.cpi)
+
+    # Convert dictionaries to AnnuityPayment objects
+    annuity_payments = [AnnuityPayment(**payment) for payment in annuity_payments_dicts]
+
 
     # Calculate the NPV of the investment portfolio value at retirement
     npv = calculateNPV.calculate_npv(annuity_payments, assumptions.savingsRoR)
