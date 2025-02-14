@@ -57,7 +57,7 @@ class Outputs(BaseModel):
 
 # API endpoint
 @app.post("/calculate-retirement-goals", response_model=Outputs)
-def calculate_retirement_goals(inputs: Inputs):
+async def calculate_retirement_goals(inputs: Inputs):
     # Placeholder: Parse inputs
     personal = inputs.personalSituation
     assumptions = inputs.assumptions
@@ -136,7 +136,7 @@ def calculate_retirement_goals(inputs: Inputs):
     system_content = f"""
       You are a retirement planner and you help people interpret and summarise retirement goals. 
     """
-
+    diff = (monthly_contribution - personal.contributionAffordability)
 
     user_content = f"""
     Summarize the retirement plan in plain text in 150 words.
@@ -157,13 +157,14 @@ def calculate_retirement_goals(inputs: Inputs):
     - Annuity payments: {annuity_payments}
     - User's contribution affordability: {personal.contributionAffordability}
     - you need to compare the monthly contribution with the user's contribution affordability
-    - if {monthly_contribution} is greater than {personal.contributionAffordability}:
+    - if {diff} is greater than 0,
         frame the response in a way that tells the user they cannot afford the monthly contribution
-    - else:
+    - otherwise,
         frame the response that tells the user they can afford the monthly contribution
     first start with what they need to do to meet their goal and then give them the summary of the plan
     then comment on whether they can afford the monthly contribution or not.
     sound friendly and professional.
+    - or if {diff} is really small, tell the user that your contribution affordability just marginally falls short, etc.
     """
 
     completion = client.chat.completions.create(
