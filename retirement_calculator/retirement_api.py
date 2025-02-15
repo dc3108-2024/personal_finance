@@ -139,7 +139,10 @@ async def calculate_retirement_goals(inputs: Inputs):
     diff = (monthly_contribution - personal.contributionAffordability)
 
     user_content = f"""
-    Summarize the retirement plan in plain text in 120 words.
+    Summarize the retirement plan in simple text in 110 words, without compromising on the details.
+    First start with what they need to do to meet their goal and then give them the summary of the plan
+    then comment on whether they can afford the monthly contribution.
+    Sound very friendly and professional.
     Inputs:
     - Current investment value: {personal.currentInvestmentVal}
     - Years to retire: {personal.yearstoRetire}
@@ -157,23 +160,21 @@ async def calculate_retirement_goals(inputs: Inputs):
     - Annuity payments: {annuity_payments}
     - User's contribution affordability: {personal.contributionAffordability}
     - you need to compare the monthly contribution with the user's contribution affordability
-    - if {diff} is greater than 0,
-        frame the response in a way that tells the user they cannot afford the monthly contribution
-    - otherwise,
-        frame the response that tells the user they can afford the monthly contribution
-    first start with what they need to do to meet their goal and then give them the summary of the plan
-    then comment on whether they can afford the monthly contribution or not.
-    sound friendly and professional.
-    - or if {diff} is really small, tell the user that your contribution affordability just marginally falls short, etc.
+    if {diff} is greater than 0,
+        tell the user they cannot afford the monthly contribution
+    otherwise,
+        tell the user they can afford the monthly contribution
+    or if {diff} is really small, tell the user that your contribution affordability just marginally falls short, etc.
     """
 
     completion = client.chat.completions.create(
         model="gpt-4o-mini",
+        #model="o3-mini",
         messages=[
             {"role": "system", "content": system_content},
             {"role": "user", "content": user_content},
         ],
-        temperature=0.5
+        temperature=0.7
     )
     
     response = Outputs(
