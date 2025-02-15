@@ -1,10 +1,11 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, APIRouter
 from pydantic import BaseModel
 import uvicorn
-import calculateAccumulation
+from functions.calculateAccumulation import calculate_yearly_buildup
 from typing import List, Optional
 
-app = FastAPI()
+
+router = APIRouter()
 
 class AccumulationRequest(BaseModel):
     initialInvestment: float
@@ -24,10 +25,10 @@ class Accumulation(BaseModel):
 class Outputs(BaseModel):
     yearlyBuildup: Optional[List[Accumulation]]
 
-@app.post("/calculate_accumulation")
+@router.post("/calculate_accumulation", response_model = Outputs)
 def calculate_accumulation_endpoint(request: AccumulationRequest):
     #try:
-        result = calculateAccumulation.calculate_yearly_buildup(
+        result = calculate_yearly_buildup(
             request.initialInvestment,
             request.cpi,
             request.rateofReturn,

@@ -1,5 +1,5 @@
 import string
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, APIRouter 
 from pydantic import BaseModel
 from typing import List, Optional
 from scipy.optimize import minimize_scalar
@@ -7,17 +7,16 @@ import os
 from dotenv import load_dotenv
 import openai
 from openai import OpenAI
-import calcTargetIncome
+from functions.calcTargetIncome import calculate_inflation_adjusted_income
 
 
 
-import calculateAnnuity 
-import calculateNPV
-import calculateAccumulation 
+from functions.calculateAnnuity import calculate_annuity_payments 
+from functions.calculateNPV import calculate_npv
+from functions.calculateAccumulation import calculate_yearly_buildup
 #import optimalContribution
 
-# Create the FastAPI app
-app = FastAPI()
+router = APIRouter()
 
 # Define input schema
 class PersonalSituation(BaseModel):
@@ -56,7 +55,7 @@ class Outputs(BaseModel):
     
 
 # API endpoint
-@app.post("/calculate-retirement-goals", response_model=Outputs)
+@router.post("/calculate-retirement-goals", response_model=Outputs)
 async def calculate_retirement_goals(inputs: Inputs):
     # Placeholder: Parse inputs
     personal = inputs.personalSituation
@@ -65,21 +64,21 @@ async def calculate_retirement_goals(inputs: Inputs):
     # Calculate inflation adjusted target yearly income level @ retirement
     #targetYearlyInfAdjusted = personal.targetYearlyIncome*((1+assumptions.cpi)**(personal.yearstoRetire))
 
-    targetYearlyInfAdjusted = calcTargetIncome.calculate_inflation_adjusted_income(personal.targetYearlyIncome,assumptions.cpi,personal.yearstoRetire)
+    targetYearlyInfAdjusted = calculate_inflation_adjusted_income(personal.targetYearlyIncome,assumptions.cpi,personal.yearstoRetire)
     annuity_payments = []
 
     # Calculate inflation adjusted yearly income for each year for the rest of the retirement period
     #annuity_payments = calculateAnnuity.calculate_annuity_payments(targetYearlyInfAdjusted, personal.yearsPostRetirement, assumptions.cpi)
 
     # Calculate inflation adjusted yearly income for each year for the rest of the retirement period
-    annuity_payments_dicts = calculateAnnuity.calculate_annuity_payments(targetYearlyInfAdjusted, personal.yearsPostRetirement, assumptions.cpi)
+    annuity_payments_dicts = calculate_annuity_payments(targetYearlyInfAdjusted, personal.yearsPostRetirement, assumptions.cpi)
 
     # Convert dictionaries to AnnuityPayment objects
     annuity_payments = [AnnuityPayment(**payment) for payment in annuity_payments_dicts]
 
 
     # Calculate the NPV of the investment portfolio value at retirement
-    npv = calculateNPV.calculate_npv(annuity_payments, assumptions.savingsRoR)
+    npv = calculate_npv(annuity_payments, assumptions.savingsRoR)
 
     # Optimise for the periodic contribution needed to reach this NPV
 
@@ -118,7 +117,7 @@ async def calculate_retirement_goals(inputs: Inputs):
 
     yearly_buildup = []
 
-    yearly_buildup = calculateAccumulation.calculate_yearly_buildup(personal.currentInvestmentVal, assumptions.cpi, assumptions.investmentRoR, assumptions.expenseRatio, personal.yearstoRetire, monthly_contribution)
+    yearly_buildup = calculate_yearly_buildup(personal.currentInvestmentVal, assumptions.cpi, assumptions.investmentRoR, assumptions.expenseRatio, personal.yearstoRetire, monthly_contribution)
 
 
 
