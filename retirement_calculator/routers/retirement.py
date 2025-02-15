@@ -171,9 +171,10 @@ async def calculate_retirement_goals(inputs: Inputs):
     """
 
     completion = client.chat.completions.create(
-        model="gpt-4o-mini",
+        #model="gpt-4o-mini",
         #model="o3-mini",
-        #model="gpt-4o",
+        model="gpt-4o-mini",
+        #model="gpt-3.5-turbo",
         messages=[
             {"role": "system", "content": system_content},
             {"role": "user", "content": user_content},
