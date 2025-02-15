@@ -1,10 +1,10 @@
 import string
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, APIRouter 
 from pydantic import BaseModel
 from typing import List, Optional
-import calculateNPV
+from functions.calculateNPV import calculate_npv
 
-app = FastAPI()
+router = APIRouter()
 
 
 class Cash_Flow(BaseModel):
@@ -19,9 +19,9 @@ class NPVRequest(BaseModel):
 class Outputs(BaseModel):
     npv: float
 
-@app.post("/calculate-npv")
+@router.post("/calculate-npv", response_model = Outputs)
 def calculate_npv(request: NPVRequest):
-    npv = calculateNPV.calculate_npv(request.annuity_payments, request.rate)
+    npv = calculate_npv(request.annuity_payments, request.rate)
     return Outputs(npv = npv)
 
 #if __name__ == "__main__":
