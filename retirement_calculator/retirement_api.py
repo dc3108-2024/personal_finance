@@ -139,7 +139,7 @@ async def calculate_retirement_goals(inputs: Inputs):
     diff = (monthly_contribution - personal.contributionAffordability)
 
     user_content = f"""
-    Summarize the retirement plan in plain text in 150 words.
+    Summarize the retirement plan in plain text in 120 words.
     Inputs:
     - Current investment value: {personal.currentInvestmentVal}
     - Years to retire: {personal.yearstoRetire}
