@@ -8,13 +8,14 @@ from dotenv import load_dotenv
 import openai
 from openai import OpenAI
 from functions.calcTargetIncome import calculate_inflation_adjusted_income
+from functions.optimiseContribution import optimise_contribution
 
 
 
 from functions.calculateAnnuity import calculate_annuity_payments 
 from functions.calculateNPV import calculate_npv
 from functions.calculateAccumulation import calculate_yearly_buildup
-#import optimalContribution
+
 
 router = APIRouter()
 
@@ -62,13 +63,13 @@ async def calculate_retirement_goals(inputs: Inputs):
     assumptions = inputs.assumptions
     
     # Calculate inflation adjusted target yearly income level @ retirement
-    #targetYearlyInfAdjusted = personal.targetYearlyIncome*((1+assumptions.cpi)**(personal.yearstoRetire))
+    
 
     targetYearlyInfAdjusted = calculate_inflation_adjusted_income(personal.targetYearlyIncome,assumptions.cpi,personal.yearstoRetire)
     annuity_payments = []
 
     # Calculate inflation adjusted yearly income for each year for the rest of the retirement period
-    #annuity_payments = calculateAnnuity.calculate_annuity_payments(targetYearlyInfAdjusted, personal.yearsPostRetirement, assumptions.cpi)
+    
 
     # Calculate inflation adjusted yearly income for each year for the rest of the retirement period
     annuity_payments_dicts = calculate_annuity_payments(targetYearlyInfAdjusted, personal.yearsPostRetirement, assumptions.cpi)
@@ -82,30 +83,10 @@ async def calculate_retirement_goals(inputs: Inputs):
 
     # Optimise for the periodic contribution needed to reach this NPV
 
-
-    #monthly_rate = (((1+assumptions.investmentRoR)/(1+assumptions.cpi))-1)/12
-
-    #yearly_contribution = (monthly_contribution*12)
-
     realRateofReturn = (((1+assumptions.investmentRoR)/(1+assumptions.cpi))-1)
-
-    print(realRateofReturn)
-
-    def calculate_savings(monthly_contribution):
-        total_savings = personal.currentInvestmentVal
-        for year in range(1, personal.yearstoRetire + 1):
-            total_savings = (total_savings*(1 + realRateofReturn - assumptions.expenseRatio))+(((monthly_contribution*12)/2)*(realRateofReturn - assumptions.expenseRatio))+(monthly_contribution*12)
-        return total_savings
-
-    # Objective function for optimization
-    # Goal: Minimize the difference between total savings and target
-    def objective_function(monthly_contribution):
-        total_savings = calculate_savings(monthly_contribution)
-        return abs(total_savings - npv)  # Minimize this difference
-
-    result = minimize_scalar(objective_function, bounds=(0, 10000), method='bounded')
-
-    monthly_contribution = result.x
+    result = optimise_contribution(personal.currentInvestmentVal, personal.yearstoRetire, realRateofReturn, assumptions.expenseRatio, npv)
+    
+    monthly_contribution = result
 
     if monthly_contribution > personal.contributionAffordability:
         outcome = "No"
@@ -126,11 +107,9 @@ async def calculate_retirement_goals(inputs: Inputs):
     load_dotenv()
 
     # Retrieve API Key from Environment
-    # Retrieve API Key from Environment
-    #openai.api_key = os.getenv("OPENAI_API_KEY")
+    
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-    #client = OpenAI()
 
     system_content = f"""
       You are a retirement planner and you help people interpret and summarise retirement goals. 
@@ -168,7 +147,6 @@ async def calculate_retirement_goals(inputs: Inputs):
 
     completion = client.chat.completions.create(
         model="gpt-4o-mini",
-        #model="o3-mini",
         messages=[
             {"role": "system", "content": system_content},
             {"role": "user", "content": user_content},
