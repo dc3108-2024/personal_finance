@@ -20,7 +20,7 @@ class Outputs(BaseModel):
     npv: float
 
 @router.post("/calculate-npv", response_model = Outputs)
-def calculate_npv(request: NPVRequest):
+def calculate_npv_endpoint(request: NPVRequest):
     npv = calculate_npv(request.annuity_payments, request.rate)
     return Outputs(npv = npv)
 
