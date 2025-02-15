@@ -1,12 +1,12 @@
 import string
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, APIRouter
 from pydantic import BaseModel
 from typing import List, Optional
-import calculateAnnuity
-import calcTargetIncome
+from functions.calculateAnnuity import calculate_annuity_payments
+from functions.calcTargetIncome import calculate_inflation_adjusted_income
 
 
-app = FastAPI()
+router = APIRouter()
 
 class AnnuityRequest(BaseModel):
     targetYearlyIncome: float
@@ -20,11 +20,11 @@ class AnnuityPayment(BaseModel):
 class Outputs(BaseModel):
     annuityPayments: Optional[List[AnnuityPayment]]
 
-@app.post("/calculate_annuity", response_model=Outputs)
+@router.post("/calculate_annuity", response_model=Outputs)
 async def calculate_annuity_endpoint(request: AnnuityRequest):
     #try:
-        inflationAdjustedTargetIncome = calcTargetIncome.calculate_inflation_adjusted_income(request.targetYearlyIncome,request.cpi,request.yearsPostRetirement)
-        annuity = calculateAnnuity.calculate_annuity_payments(inflationAdjustedTargetIncome, request.yearsPostRetirement, request.cpi)
+        inflationAdjustedTargetIncome = calculate_inflation_adjusted_income(request.targetYearlyIncome,request.cpi,request.yearsPostRetirement)
+        annuity = calculate_annuity_payments(inflationAdjustedTargetIncome, request.yearsPostRetirement, request.cpi)
         response = Outputs(
         annuityPayments = annuity
      )
