@@ -93,6 +93,7 @@ async def calculate_retirement_goals(inputs: Inputs):
     #print(realRateofReturn)
 
     result = optimise_contribution(personal.currentInvestmentVal, personal.yearstoRetire, realRateofReturn, assumptions.expenseRatio, npv)
+    print(result)
 
     #def calculate_savings(monthly_contribution):
     #    total_savings = personal.currentInvestmentVal
@@ -172,6 +173,7 @@ async def calculate_retirement_goals(inputs: Inputs):
     completion = client.chat.completions.create(
         model="gpt-4o-mini",
         #model="o3-mini",
+        #model="gpt-4o",
         messages=[
             {"role": "system", "content": system_content},
             {"role": "user", "content": user_content},
