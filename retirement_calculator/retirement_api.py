@@ -139,7 +139,7 @@ async def calculate_retirement_goals(inputs: Inputs):
     diff = (monthly_contribution - personal.contributionAffordability)
 
     user_content = f"""
-    Summarize the retirement plan in simple text in 110 words, without compromising on the details.
+    Summarize the retirement plan in simple text in 100 words, without compromising on the details.
     First start with what they need to do to meet their goal and then give them the summary of the plan
     then comment on whether they can afford the monthly contribution.
     Sound very friendly and professional.
